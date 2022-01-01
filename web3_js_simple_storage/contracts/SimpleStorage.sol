@@ -11,19 +11,19 @@ contract SimpleStorage {
     }
 
     People[] public people;
-    mapping (string => uint256) public nameToFavNumber;
+    mapping (string => uint256) public nameToFavoriteNumber;
 
-    function setFavoriteNumber(uint256 _favNum) public {
-        favoriteNumber = _favNum;
+    function setFavoriteNumber(uint256 _favoriteNumber) public {
+        favoriteNumber = _favoriteNumber;
     }
 
     function retrieve() public view returns (uint256) {
         return favoriteNumber;
     }
 
-    function addPerson(uint256 _favNum, string memory _name) public {
-        people.push(People({ favoriteNumber:_favNum, name:_name }));
-        nameToFavNumber[_name] = _favNum;
+    function addPerson(uint256 _favoriteNumber, string memory _name) public {
+        people.push(People({ favoriteNumber:_favoriteNumber, name:_name }));
+        nameToFavoriteNumber[_name] = _favoriteNumber;
     }
 
 }
