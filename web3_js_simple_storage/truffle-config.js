@@ -2,7 +2,8 @@ const HDWalletProvider = require('@truffle/hdwallet-provider');
 require('dotenv').config();
 
 const mnemonic = process.env.MNEMONIC;
-const endpointUrl = `wss://kovan.infura.io/ws/v3/${process.env.WEB3_INFURA_PROJECT_ID}`
+const kovanEndpoint = `wss://kovan.infura.io/ws/v3/${process.env.WEB3_INFURA_PROJECT_ID}`
+const rinkebyEndpoint = `wss://rinkeby.infura.io/ws/v3/${process.env.WEB3_INFURA_PROJECT_ID}`
 const etherscanToken = process.env.ETHERSCAN_TOKEN;
 const maticEndPoint = `https://rpc-mumbai.maticvigil.com/v1/${process.env.MATIC_ID}`
 const polygonscanToken = process.env.POLYGONSCAN_TOKEN
@@ -20,12 +21,25 @@ module.exports = {
           mnemonic: {
             phrase: mnemonic
           },
-          providerOrUrl: endpointUrl
+          providerOrUrl: kovanEndpoint
         })
       },
       gas: 5000000,
       gasPrice: 25000000000,
       network_id: 42
+    },
+    rinkeby: {
+      provider: function() {
+        return new HDWalletProvider({
+          mnemonic: {
+            phrase: mnemonic
+          },
+          providerOrUrl: rinkebyEndpoint
+        })
+      },
+      gas: 4500000,
+      gasPrice: 10000000000,
+      network_id: 4
     },
     matic: {
       provider: () => new HDWalletProvider({
