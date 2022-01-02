@@ -10,7 +10,9 @@ contract FundMe {
     AggregatorV3Interface public priceFeed;
 
     address public owner;
-    mapping (address => uint256) public donors;
+    mapping (address => uint256) public donor;
+    mapping (address => bool) public donorIndex;
+    address[] public donors;
 
     constructor(address _priceFeed) public {
         owner = msg.sender;
@@ -22,21 +24,38 @@ contract FundMe {
         _;
     }
 
+    function entranceFee() public view returns (uint256) {
+        uint256 minimumAmount = 50 * 10**18;
+        uint256 precision = 1 * 10**18;
+        uint256 usdToEth = (minimumAmount * precision) / getPrice();
+        return usdToEth;
+    }
+
     function fund() public payable {
-        donors[msg.sender] += msg.value;
+        require(msg.value >= entranceFee(), "You need to send at least the ether equivalent of $50");
+        donor[msg.sender] += msg.value;
+        if (donorIndex[msg.sender] == false) {
+            donorIndex[msg.sender] = true;
+            donors.push(msg.sender);
+        }
+    }
+
+    function getDonorCount() public view returns (uint256) {
+        return donors.length;
     }
 
     function getPrice() public view returns (uint256) {
         (, int price,,,) = priceFeed.latestRoundData();
-        return uint256(price);
-    }
-
-    function conversionRate(uint256 amount) public view returns (uint256) {
-        uint256 usdToEth = (amount * 10**8) / getPrice();
-        return usdToEth;
+        return uint256(price * 10**10);
     }
 
     function withdraw() public payable onlyOwner {
-        msg.sender.transfer(address(this).balance);
+        address payable accountant = payable(msg.sender);
+        accountant.transfer(address(this).balance);
+        for (uint256 i = 0; i < donors.length; i++) {
+            address funder = donors[i];
+            donor[funder] = 0;
+        }
+        donors = new address[](0);
     }
 }

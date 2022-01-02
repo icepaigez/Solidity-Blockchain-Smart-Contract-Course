@@ -2,8 +2,9 @@ const FundMe = artifacts.require("FundMe");
 const MockV3Aggregator = artifacts.require("MockV3Aggregator");
 
 let priceFeedAddress;
-const decimals = 18
-const initialValue = 2000*10**18
+const decimals = 8
+const initialValue = 200000000000
+//const initialValue = web3.utils.toWei(web3.utils.toBN(2000), 'ether')
 
 module.exports = async function (deployer, network) {
 
@@ -14,7 +15,6 @@ module.exports = async function (deployer, network) {
     await deployer.deploy(MockV3Aggregator, decimals, initialValue);
     const mock_aggregator = await MockV3Aggregator.deployed();
     priceFeedAddress = mock_aggregator.address;
-    console.log(priceFeedAddress)
     await deployer.deploy(FundMe, priceFeedAddress);
   }
 };
