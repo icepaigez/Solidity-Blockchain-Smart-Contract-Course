@@ -22,6 +22,9 @@ contract Lottery {
 	}
 	function getEntranceFee() public view returns(uint256) {
 		(, int price,,,) = priceFeed.latestRoundData();
+		uint256 adjustedPrice = uint256(price) * 10**10;
+		uint256 entryFee = (usdEntryFee * 10**18) / adjustedPrice;
+		return entryFee;
 	}
 	function startLottery() public {}
 	function endLottery() public {}
