@@ -7,7 +7,6 @@ let priceFeedAddress, vrfCoordinator, link, keyHash, fee;
 const decimals = 8
 const initialValue = 200000000000
 const amount = 10**27;
-//const initialSupply = web3.utils.toWei(amount.toString(), 'ether')
 const initialSupply = "0x"+amount.toString(16)
 
 module.exports = async function (deployer, network) {
