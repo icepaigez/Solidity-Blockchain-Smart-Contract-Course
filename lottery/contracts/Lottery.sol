@@ -12,6 +12,7 @@ contract Lottery is Ownable, VRFConsumerBase {
 
 	bytes32 public keyHash;
     uint256 public fee;
+    event RequestedRandomness(bytes32 requestId);
 
     uint256 public randomResult;
 
@@ -56,6 +57,7 @@ contract Lottery is Ownable, VRFConsumerBase {
 		require(lottery_state == LOTTERY_STATE.OPEN);
 		lottery_state = LOTTERY_STATE.CALCULATING_WINNER;
 		bytes32 requestId = requestRandomness(keyHash, fee);
+		emit RequestedRandomness(requestId);
 	}
 
 	function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
