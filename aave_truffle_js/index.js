@@ -1,5 +1,6 @@
 const IWeth = require("./abis/IWeth.json");
 const ILendingPoolAddressesProvider = require("./abis/ILendingPoolAddressesProvider.json");
+const ILendingPool = require("./abis/ILendingPool.json");
 const Web3 = require("web3");
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 require('dotenv').config();
@@ -42,7 +43,12 @@ const get_lending_pool = async() => {
 }
 
 const aave_borrow = async() => {
-
+	let lending_pool_address = await get_lending_pool()
+	const { web3 } = await init();
+	if (lending_pool_address) {
+		const contract = new web3.eth.Contract(ILendingPool.abi, lending_pool_address)
+		console.log(contract)
+	}
 }
 
-//get_lending_pool()
+//aave_borrow()
