@@ -1,12 +1,14 @@
 const IWeth = require("./abis/IWeth.json");
+const ILendingPoolAddressesProvider = require("./abis/ILendingPoolAddressesProvider.json");
 const Web3 = require("web3");
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 require('dotenv').config();
 
 
-const rinkeby = `https://rinkeby.infura.io/v3/${process.env.WEB3_INFURA_PROJECT_ID}`
+const kovan = `https://kovan.infura.io/v3/${process.env.WEB3_INFURA_PROJECT_ID}`
 const mnemonic = process.env.MNEMONIC;
-const IWeth_ADDRESS = "0xc778417e063141139fce010982780140aa0cd5ab" //rinkeby
+const IWeth_ADDRESS = "0xd0a1e359811322d97991e03f863a0c30c2cf029c" //kovan
+const ILendingPoolAddressesProvider_ADDRESS = "0x88757f2f99175387aB4C6a4b3067c77A695b0349"
 
 
 const init = async() => {
@@ -15,7 +17,7 @@ const init = async() => {
 		mnemonic: {
             phrase: mnemonic
           },
-          providerOrUrl: rinkeby
+          providerOrUrl: kovan
 	})
 	const web3 = new Web3(provider)
 	const contract = new web3.eth.Contract(IWeth.abi, IWeth_ADDRESS)
@@ -33,7 +35,10 @@ const init = async() => {
 }
 
 const get_lending_pool = async() => {
-	const { account, web3 } = await init();
+	const { web3 } = await init();
+	const contract = new web3.eth.Contract(ILendingPoolAddressesProvider.abi, ILendingPoolAddressesProvider_ADDRESS)
+	let pool_address = await contract.methods.getLendingPool().call()
+	return pool_address
 }
 
 const aave_borrow = async() => {
