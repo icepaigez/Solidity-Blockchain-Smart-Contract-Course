@@ -71,6 +71,7 @@ const get_borrowable_data = async() => {
 	const { web3, account } = await init();
 	if (lending_pool_address) {
 		user_data = await get_user_data(ILendingPool.abi, lending_pool_address)
+		//console.log(user_data)
 		const { available_borrow_eth, total_collateral_eth, total_debt_eth, health_factor } = user_data;
 		let dai_eth_price = await get_asset_price(eth_dai_address)
 		if (total_debt_eth < (0.75 * total_collateral_eth) ) {
@@ -97,7 +98,7 @@ const get_asset_price = async(price_feed_address) => {
 	let result = await price_feed.methods.latestRoundData().call()
 	const { answer } = result
 	let price = web3.utils.fromWei(answer)
-	console.log(price)
+	//console.log(price)
 	return price
 }
 
@@ -122,4 +123,4 @@ const get_user_data = async(lending_pool_abi, lending_pool_address) => {
 }
 
 
-//get_asset_price(eth_dai_address)
+//get_borrowable_data()
