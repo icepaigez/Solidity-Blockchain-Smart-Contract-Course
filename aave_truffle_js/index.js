@@ -66,13 +66,47 @@ const aave_deposit = async() => {
 }
 
 const get_borrowable_data = async() => {
-	let lending_pool, user_data, available_borrow_eth, total_collateral_eth, total_debt_eth, health_factor, amount_dai_to_borrow
+	let lending_pool, user_data, amount_dai_to_borrow
 	let lending_pool_address = await get_lending_pool()
 	const { web3, account } = await init();
 	if (lending_pool_address) {
-		lending_pool = new web3.eth.Contract(ILendingPool.abi, lending_pool_address)
-		user_data = await lending_pool.methods.getUserAccountData(account).call()
-		const { 
+		user_data = await get_user_data(ILendingPool.abi, lending_pool_address)
+		const { available_borrow_eth, total_collateral_eth, total_debt_eth, health_factor } = user_data;
+		let dai_eth_price = await get_asset_price(eth_dai_address)
+		if (total_debt_eth < (0.75 * total_collateral_eth) ) {
+			amount_dai_to_borrow = (1 / dai_eth_price) * (available_borrow_eth * 0.95)
+			if (amount_dai_to_borrow) {
+				await lending_pool.methods.borrow(DAI_ADDRESS, web3.utils.toWei(String(amount_dai_to_borrow), 'ether'), 1, 0, account).send({from: account})
+			}
+		} else {//repay debt
+			let debt_dai_amount = total_debt_eth * (1 / dai_eth_price) * 0.9999 //the DAI balance is not enough to clear the debt and accrued interest, so the 0.9999; the balance will be paid with eth
+			//console.log(debt_dai_amount)
+			let approve = await approve_erc20(lending_pool_address, web3.utils.toWei(String(debt_dai_amount), 'ether'), IWeth.abi, DAI_ADDRESS)
+			if (approve.status) {
+				let repay_tx = await lending_pool.methods.repay(DAI_ADDRESS, web3.utils.toWei(String(debt_dai_amount), 'ether'), 1, account).send({from: account})
+				console.log(repay_tx)
+			}
+		}
+	}
+}
+
+
+const get_asset_price = async(price_feed_address) => {
+	const { web3 } = await init();
+	const price_feed = new web3.eth.Contract(AggregatorV3Interface.abi, price_feed_address)
+	let result = await price_feed.methods.latestRoundData().call()
+	const { answer } = result
+	let price = web3.utils.fromWei(answer)
+	console.log(price)
+	return price
+}
+
+const get_user_data = async(lending_pool_abi, lending_pool_address) => {
+	let lending_pool, user_data, available_borrow_eth, total_collateral_eth, total_debt_eth, health_factor
+	const { web3, account } = await init();
+	lending_pool = new web3.eth.Contract(lending_pool_abi, lending_pool_address)
+	user_data = await lending_pool.methods.getUserAccountData(account).call()
+	const { 
 			totalCollateralETH,
 			totalDebtETH,
 			availableBorrowsETH,
@@ -84,33 +118,8 @@ const get_borrowable_data = async() => {
 		total_collateral_eth = web3.utils.fromWei(totalCollateralETH, 'ether')
 		total_debt_eth = web3.utils.fromWei(totalDebtETH, 'ether')
 		health_factor = web3.utils.fromWei(healthFactor, 'ether')
-
-		if (total_debt_eth < (0.75 * total_collateral_eth) ) {
-			let dai_eth_price = await get_asset_price(eth_dai_address)
-			amount_dai_to_borrow = (1 / dai_eth_price) * (available_borrow_eth * 0.95)
-			if (amount_dai_to_borrow) {
-				await lending_pool.methods.borrow(DAI_ADDRESS, web3.utils.toWei(String(amount_dai_to_borrow), 'ether'), 1, 0, account).send({from: account})
-				// user_data = await lending_pool.methods.getUserAccountData(account).call()
-				// console.log(user_data)
-			}
-		} else {
-			
-		}
-	}
+		return { available_borrow_eth, total_collateral_eth, total_debt_eth, health_factor }
 }
 
-const repay_debt = async(amount, contract, lending_pool_address) => {
-	
-}
 
-const get_asset_price = async(price_feed_address) => {
-	const { web3 } = await init();
-	const price_feed = new web3.eth.Contract(AggregatorV3Interface.abi, price_feed_address)
-	let result = await price_feed.methods.latestRoundData().call()
-	const { answer } = result
-	let price = web3.utils.fromWei(answer)
-	return price
-}
-
-//get_borrowable_data()
-//repay_debt()
+//get_asset_price(eth_dai_address)
