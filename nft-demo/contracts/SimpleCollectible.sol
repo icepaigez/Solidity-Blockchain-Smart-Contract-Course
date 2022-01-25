@@ -21,3 +21,5 @@ contract SimpleCollectible is ERC721 {
 		return newTokenId;
 	}
 }
+
+//21 feb ope checkup
